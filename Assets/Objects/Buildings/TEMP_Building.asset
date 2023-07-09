@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: TEMP_Building
   m_EditorClassIdentifier: 
   BuildingName: TEMP_Building
-  BuildingMesh: {fileID: -5495902117074765545, guid: a4dd88d0c9f58e044a6646437254beef, type: 3}
+  BuildingObject: {fileID: 919132149155446097, guid: a4dd88d0c9f58e044a6646437254beef, type: 3}
