@@ -6,9 +6,15 @@ using Vector3Int = UnityEngine.Vector3Int;
 public class MapManager : MonoBehaviour
 {
     [SerializeField] private Vector2Int mapSize = Vector2Int.zero;
+
+    public static MapManager Instance { get; private set; }
     
-    private static readonly List<Vector3Int> map = new List<Vector3Int>();
-    public static MapManager Instance { get; set; }
+    private readonly List<Vector3Int> map = new List<Vector3Int>();
+    
+    public Vector2Int MapSize
+    {
+        get => mapSize;
+    }
     
     private void Awake()
     {
