@@ -1,50 +1,40 @@
-Shader "Hidden/pixelate"
+Shader "CUSTOM/pixelate"
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
+        main_tex ("Texture", 2D) = "white" {}
     }
+
     SubShader
     {
-        // No culling or depth
-        Cull Off ZWrite Off ZTest Always
+        Tags
+        {
+            "RenderType"="Opaque"
+        }
+
+        Cull Off
+        ZWrite Off
+        ZTest Always
 
         Pass
         {
             CGPROGRAM
-            #pragma vertex vert
+            #pragma vertex vert_img
             #pragma fragment frag
 
             #include "UnityCG.cginc"
 
-            struct appdata
-            {
-                float4 vertex : POSITION;
-                float2 uv : TEXCOORD0;
-            };
+            sampler2D main_tex;
+            float2 block_count;
+            float2 block_size;
 
-            struct v2f
+            fixed4 frag(const v2f_img i) : SV_Target
             {
-                float2 uv : TEXCOORD0;
-                float4 vertex : SV_POSITION;
-            };
+                const float2 block_pos = floor(i.uv * block_count);
+                const float2 block_center = block_pos * block_size + block_size * 0.5f;
 
-            v2f vert (appdata v)
-            {
-                v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = v.uv;
-                return o;
-            }
-
-            sampler2D _MainTex;
-
-            fixed4 frag (v2f i) : SV_Target
-            {
-                fixed4 col = tex2D(_MainTex, i.uv);
-                // just invert the colors
-                col.rgb = 1 - col.rgb;
-                return col;
+                float4 tex = tex2D(main_tex, block_center);
+                return tex;
             }
             ENDCG
         }
