@@ -1,23 +1,25 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
 public class GenerationManager : MonoBehaviour
 {
     [SerializeField] private Transform mapParent = null;
-    [SerializeField] private GameObject tile = null;
-    [SerializeField] private Material[] terrainMaterials = null;
+    [SerializeField] private float noiseScale = 1.0f;
     
     private MapManager mapManager = null;
+    private new Renderer renderer;
+    
     private void Start()
     {
         NullChecker();
-        GenerateGroundMesh();
-        MergeMapMesh();
+        GenerateMap();
     }
 
     private void NullChecker()
     {
+        
         mapManager = MapManager.Instance;
         if (mapManager == null)
         {
@@ -27,77 +29,79 @@ public class GenerationManager : MonoBehaviour
         {
             throw new System.Exception("mapParent object is null on " + name);
         }
-        if (terrainMaterials.Length == 0)
-        {
-            throw new System.Exception("terrainMaterials array is empty on " + name);
-        }
+        renderer = mapParent.GetComponent<Renderer>();
     }
 
-    private void MergeMapMesh()
+    private float[,] GenerateNoise(float scale)
     {
-        List<MeshRenderer> allMeshes = new List<MeshRenderer>();
-        if (mapParent.childCount > 0) {
-            for (int i = mapParent.childCount - 1; i >= 0; i--) {
-                allMeshes.Add(mapParent.GetChild(i).GetComponent<MeshRenderer>());
+        if (mapManager.MapSize.x == 0 || mapManager.MapSize.y == 0)
+        {
+            throw new System.Exception("MapSize is zero!");
+        }
+        
+        int sizeX = mapManager.MapSize.x;
+        int sizeY = mapManager.MapSize.y;
+        float[,] noise = new float[sizeX, sizeY];
+
+        if (scale <= 0)
+        {
+            scale = 0.0001f;
+        }
+
+        for (int x = 0; x < sizeX; x++)
+        {
+            for (int y = 0; y < sizeY; y++)
+            {
+                float sampleX = x / scale;
+                float sampleY = y / scale;
+
+                float perlinValue = Mathf.PerlinNoise(sampleX, sampleY);
+                noise[x, y] = perlinValue;
             }
         }
-
-        Mesh finalMesh = new Mesh();
-        CombineInstance[] combineInstance = new CombineInstance[allMeshes.Count];
-        for (int i = 0; i < allMeshes.Count; i++) {
-            combineInstance[i].mesh = allMeshes[i].GetComponent<MeshFilter>().sharedMesh;
-            combineInstance[i].transform = allMeshes[i].transform.localToWorldMatrix;
-        }
-
-        finalMesh.CombineMeshes(combineInstance);
-        GameObject newObject = new GameObject("mesh");
-        MeshFilter filter = newObject.AddComponent<MeshFilter>();
-        filter.sharedMesh = finalMesh;
-        MeshRenderer renderer = newObject.AddComponent<MeshRenderer>();
-        MeshCollider collider = newObject.AddComponent<MeshCollider>();
-
-        for (int i = mapParent.childCount - 1; i >= 0; i--) {
-            Transform child = mapParent.GetChild(i);
-            DestroyImmediate(child.gameObject);
-        }
-
-        newObject.transform.SetParent(mapParent, false);
+        
+        return noise;
     }
 
-    private void GenerateGroundMesh() {
-        if (mapManager.Map.GetLength(0) == 0 || mapManager.Map.GetLength(1) == 0) return;
-        int sizeX = mapManager.Map.GetLength(0);
-        int sizeY = mapManager.Map.GetLength(1);
+    private void GenerateMap()
+    {
+        float[,] noise = GenerateNoise(noiseScale);
+        RenderNoise(noise);
+    }
+
+    private void RenderNoise(float[,] noise)
+    {
+        int width = noise.GetLength(0);
+        int height = noise.GetLength(1);
+
+        Texture2D texture2D = new Texture2D(width, height);
+        Color[] color = new Color[width * height];
         
-        for (int x = 0; x < sizeX; x++) {
-            for (int y = 0; y < sizeY; y++) {
-                GameObject newTile = Instantiate(tile, mapParent, false);
-                newTile.transform.position = new Vector3(x, 0, y);
-                newTile.transform.eulerAngles = new Vector3(-90, 0, 0);
-
-                if (y > 25)
-                {
-                    mapManager.Map[x, y].tileType = Tile.TileType.RIVER;
-                }
-
-                newTile.GetComponent<MeshRenderer>().material =
-                    mapManager.Map[x, y].tileType == Tile.TileType.DEFAULT ? terrainMaterials[0] : terrainMaterials[1];
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                color[y * width + x] = Color.Lerp(Color.black, Color.white, noise[x, y]);
             }
         }
+        
+        texture2D.SetPixels(color);
+        texture2D.Apply();
+        renderer.sharedMaterial.mainTexture = texture2D;
+        renderer.transform.localScale = new Vector3(width, 1, height);
     }
     
-    private void GenerateMapMesh()
+    private void GenerateFlatMesh()
     {
-        if (mapManager.Map.GetLength(0) == 0 || mapManager.Map.GetLength(1) == 0) return;
-        int sizeX = mapManager.Map.GetLength(0);
-        int sizeY = mapManager.Map.GetLength(1);
+        if (mapManager.MapSize.x == 0 ||mapManager.MapSize.y == 0) return;
+        int sizeX = mapManager.MapSize.x;
+        int sizeY = mapManager.MapSize.y;
 
         GameObject meshObject = new GameObject("terrainMesh");
         meshObject.transform.eulerAngles = new Vector3(180f, 0, 0);
         meshObject.transform.SetParent(mapParent, false);
         MeshFilter meshFilter = meshObject.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = meshObject.AddComponent<MeshRenderer>();
-        meshRenderer.material = terrainMaterials[0];
         Mesh mesh = new Mesh();
 
         List<Vector3> vertices = new List<Vector3>();
