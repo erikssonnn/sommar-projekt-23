@@ -9,6 +9,7 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private float scrollSpeed = 0.0f;
 
     [SerializeField] private float minZoom, maxZoom = 0.0f;
+    [SerializeField] private float panBorder = 0.0f;
 
     private MapManager mapManager = null;
     private Camera cam = null;
@@ -68,10 +69,25 @@ public class CameraManager : MonoBehaviour
 
     private void Movement()
     {
-        float x = Input.GetAxisRaw("Horizontal");
-        float y = Input.GetAxisRaw("Vertical");
-        Vector3 pos = transform.position +=
-            new Vector3(x, 0, y) * (panSpeed * Time.fixedDeltaTime * cam.orthographicSize * downScale);
+        Vector3 pos = transform.position;
+
+        if (Input.GetKey(KeyCode.W) || Input.mousePosition.y >= Screen.height - panBorder)
+        {
+            pos.z += (panSpeed * Time.fixedDeltaTime * cam.orthographicSize * downScale);
+        }
+        if (Input.GetKey(KeyCode.S) || Input.mousePosition.y <= panBorder)
+        {
+            pos.z -= (panSpeed * Time.fixedDeltaTime * cam.orthographicSize * downScale);
+        }
+        if (Input.GetKey(KeyCode.D) || Input.mousePosition.x >= Screen.width - panBorder)
+        {
+            pos.x += (panSpeed * Time.fixedDeltaTime * cam.orthographicSize * downScale);
+        }
+        if (Input.GetKey(KeyCode.A) || Input.mousePosition.x <= panBorder)
+        {
+            pos.x -= (panSpeed * Time.fixedDeltaTime * cam.orthographicSize * downScale);
+        }
+        
         pos.x = Mathf.Clamp(pos.x, -mapLimit.x, mapLimit.x);
         pos.z = Mathf.Clamp(pos.z, -mapLimit.y, mapLimit.y);
         t.position = pos;

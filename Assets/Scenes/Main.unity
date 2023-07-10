@@ -520,6 +520,7 @@ MonoBehaviour:
   scrollSpeed: 1200
   minZoom: 25
   maxZoom: 75
+  panBorder: 15
 --- !u!114 &963194230
 MonoBehaviour:
   m_ObjectHideFlags: 0
