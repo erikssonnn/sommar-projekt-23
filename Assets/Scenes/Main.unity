@@ -307,8 +307,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mapParent: {fileID: 623960577}
+  tile: {fileID: 8770863802310669103, guid: 868ce76b7c7e07e468a6dd47ff78e11e, type: 3}
   terrainMaterials:
   - {fileID: 2100000, guid: 5f461ea2ef042934285865696c59eab8, type: 2}
+  - {fileID: 2100000, guid: 401ebb23860cc53439dff4277ab24b65, type: 2}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -386,7 +388,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0.49999917, y: -0, z: -0, w: 0.8660259}
-  m_LocalPosition: {x: 50, y: 20, z: -50}
+  m_LocalPosition: {x: 50, y: 20, z: 50}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
