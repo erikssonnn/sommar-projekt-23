@@ -8,6 +8,8 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private float scrollPanSpeed = 0.0f;
     [SerializeField] private float scrollSpeed = 0.0f;
 
+    [SerializeField] private float minZoom, maxZoom = 0.0f;
+
     private MapManager mapManager = null;
     private Camera cam = null;
     private const float downScale = 0.1f;
@@ -49,7 +51,7 @@ public class CameraManager : MonoBehaviour
         float size = cam.orthographicSize;
         float scroll = Input.GetAxisRaw("Mouse ScrollWheel");
         size -= scroll * scrollSpeed * Time.fixedDeltaTime;
-        size = Mathf.Clamp(size, 15, 40);
+        size = Mathf.Clamp(size, minZoom, maxZoom);
         cam.orthographicSize = size;
     }
 
