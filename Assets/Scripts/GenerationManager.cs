@@ -51,15 +51,18 @@ public class MeshData
 
 public class GenerationManager : MonoBehaviour
 {
-    [Header("MAIN: ")] [SerializeField] private TerrainType[] terrainTypes = null;
+    [Header("MAIN: ")] 
+    [SerializeField] private TerrainType[] terrainTypes = null;
 
-    [Header("ASSIGNABLE: ")] [SerializeField]
-    private Transform mapParent = null;
+    [Header("ASSIGNABLE: ")] 
+    [SerializeField] private Transform mapParent = null;
 
     [Header("NOISE: ")] [SerializeField] private int seed = 0;
     [SerializeField] private bool randomSeed = false;
     [SerializeField] private float noiseScale = 1.0f;
     [Range(0, 5)] [SerializeField] private int octaves = 0;
+    [SerializeField] private float heightMultiplier = 0.0f;
+    [SerializeField] private AnimationCurve heightCurve = null;
     [Range(0, 0.5f)] [SerializeField] private float persistance = 0.0f;
     [Range(0, 25)] [SerializeField] private float lacunarity = 0.0f;
     [SerializeField] private Vector2 offset = Vector2.zero;
@@ -69,7 +72,9 @@ public class GenerationManager : MonoBehaviour
     private MeshFilter meshFilter = null;
 
     private Vector2Int mapSize = Vector2Int.zero;
-
+    private float halfWidth = 0.0f;
+    private float halfHeight = 0.0f;
+    
     private void Start()
     {
         NullChecker();
@@ -85,6 +90,8 @@ public class GenerationManager : MonoBehaviour
         }
 
         mapSize = mapManager.MapSize;
+        halfWidth = mapSize.x / 2f;
+        halfHeight = mapSize.y / 2f;
 
         if (mapParent == null)
         {
@@ -118,8 +125,6 @@ public class GenerationManager : MonoBehaviour
         }
 
         noiseScale = Mathf.Clamp(noiseScale, 0.01f, 10000f);
-        float halfWidth = mapSize.x / 2f;
-        float halfHeight = mapSize.y / 2f;
 
         for (int x = 0; x < mapSize.x; x++)
         {
@@ -161,9 +166,6 @@ public class GenerationManager : MonoBehaviour
         float[,] noiseMap = GenerateNoise();
         Color[] colorMap = new Color[mapSize.x * mapSize.y];
 
-        float halfWidth = mapSize.x / 2f;
-        float halfHeight = mapSize.y / 2f;
-        
         for (int x = 0; x < mapSize.x; x++)
         {
             for (int y = 0; y < mapSize.y; y++)
@@ -188,7 +190,11 @@ public class GenerationManager : MonoBehaviour
             }
         }
 
-        RenderMesh(GenerateMesh(noiseMap), TextureFromColorMap(colorMap));
+        MeshData meshData = GenerateMesh(noiseMap);
+        Texture2D texture2D = TextureFromColorMap(colorMap);
+
+        meshFilter.sharedMesh = meshData.CreateMesh();
+        meshRenderer.sharedMaterial.mainTexture = texture2D;
     }
 
     private Texture2D TextureFromColorMap(Color[] colorMap)
@@ -204,13 +210,7 @@ public class GenerationManager : MonoBehaviour
         return texture2D;
     }
 
-    private void RenderMesh(MeshData meshData, Texture2D texture2D)
-    {
-        meshFilter.sharedMesh = meshData.CreateMesh();
-        meshRenderer.sharedMaterial.mainTexture = texture2D;
-    }
-
-    private static MeshData GenerateMesh(float[,] heightMap)
+    private MeshData GenerateMesh(float[,] heightMap)
     {
         int width = heightMap.GetLength(0);
         int height = heightMap.GetLength(1);
@@ -224,7 +224,7 @@ public class GenerationManager : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                meshData.vertices[vertexIndex] = new Vector3(topLeftX + x, heightMap[x, y], topLeftZ - y);
+                meshData.vertices[vertexIndex] = new Vector3(topLeftX + x,Mathf.RoundToInt((1 - heightMap[x, y]) * heightMultiplier), topLeftZ - y);
                 meshData.uvs[vertexIndex] = new Vector2(x / (float)width, y / (float)height);
 
                 if (x < width - 1 && y < height - 1)

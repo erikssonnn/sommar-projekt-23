@@ -23,6 +23,7 @@ public class Tile
 public class MapManager : MonoBehaviour
 {
     [SerializeField] private Vector2Int mapSize = Vector2Int.zero;
+    [SerializeField] private bool debug = false;
 
     public Vector2Int MapSize
     {
@@ -34,7 +35,7 @@ public class MapManager : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (map == null || map.Count == 0) return;
+        if (map == null || map.Count == 0 || !debug) return;
         foreach (Vector2Int position in map.Select(tile => tile.Key))
         {
             Gizmos.color = Color.red;
