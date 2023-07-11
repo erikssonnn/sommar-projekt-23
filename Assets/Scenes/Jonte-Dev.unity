@@ -176,7 +176,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22388bfa6c27a4d47ae324d87c40531a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BuildingType: {fileID: 11400000, guid: 07d59be0478177e43bacb761a3e161a2, type: 2}
+  buildingType: {fileID: 11400000, guid: 07d59be0478177e43bacb761a3e161a2, type: 2}
 --- !u!114 &400981814
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -564,6 +564,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1727027647}
   - component: {fileID: 1727027646}
+  - component: {fileID: 1727027648}
   m_Layer: 0
   m_Name: TEMPMANAGER
   m_TagString: Untagged
@@ -583,8 +584,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b02ac9c08b1030a478072acfcd512472, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PreviewMaterial: {fileID: 2100000, guid: cf316d27764537642919cc0f76990003, type: 2}
-  BuildingParent: {fileID: 2077615268}
+  useJobs: 1
+  previewMaterial: {fileID: 2100000, guid: cf316d27764537642919cc0f76990003, type: 2}
+  buildingParent: {fileID: 2077615268}
 --- !u!4 &1727027647
 Transform:
   m_ObjectHideFlags: 0
@@ -600,6 +602,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1727027648
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1727027645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3337d9b833bd61b4a9a319f052eed611, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mapSize: {x: 100, y: 100}
 --- !u!1 &1933569368
 GameObject:
   m_ObjectHideFlags: 0

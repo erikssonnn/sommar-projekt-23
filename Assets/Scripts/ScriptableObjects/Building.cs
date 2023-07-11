@@ -6,18 +6,18 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New Building", menuName = "ScriptableObjects/Building", order = 1)]
 public class Building : ScriptableObject
 {
-    [SerializeField] private string BuildingName = null;
-    [SerializeField] private GameObject BuildingObject = null;
+    [SerializeField] private string buildingName = null;
+    [SerializeField] private GameObject buildingObject = null;
     // TODO: Add resources needed when resource manager is implemented
     // TODO: Add job type 
     // TODO: Add dependancies in adjacent tiles
 
     public string GetBuildingName()
     {
-        return BuildingName;
+        return buildingName;
     }
     public GameObject GetObject()
     {
-        return BuildingObject;
+        return buildingObject;
     }
 }

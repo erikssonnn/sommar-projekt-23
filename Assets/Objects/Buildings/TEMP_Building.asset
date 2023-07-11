@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f815460d30292424aa9a1c156c1ede68, type: 3}
   m_Name: TEMP_Building
   m_EditorClassIdentifier: 
-  BuildingName: TEMP_Building
-  BuildingObject: {fileID: 919132149155446097, guid: a4dd88d0c9f58e044a6646437254beef, type: 3}
+  buildingName: TEMP_Building
+  buildingObject: {fileID: 919132149155446097, guid: a4dd88d0c9f58e044a6646437254beef, type: 3}
