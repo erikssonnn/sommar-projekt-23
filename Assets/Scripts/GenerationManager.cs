@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
 using Texture2D = UnityEngine.Texture2D;
 
@@ -92,9 +92,15 @@ public class GenerationManager : MonoBehaviour
     [SerializeField] private Vector2 offset = Vector2.zero;
 
     private MapManager mapManager = null;
-    private new Renderer renderer = null;
     private MeshRenderer meshRenderer = null;
     private MeshFilter meshFilter = null;
+
+    private Vector2Int mapSize = Vector2Int.zero;
+
+    private void Start()
+    {
+        GenerateMap();
+    }
 
     private void NullChecker()
     {
@@ -105,31 +111,30 @@ public class GenerationManager : MonoBehaviour
             throw new System.Exception("Cant find mapManager instance!");
         }
 
+        mapSize = mapManager.MapSize;
+
         if (mapParent == null)
         {
             throw new System.Exception("mapParent object is null on " + name);
         }
 
-        renderer = mapParent.GetComponent<Renderer>();
         meshRenderer = mapParent.GetComponent<MeshRenderer>();
         meshFilter = mapParent.GetComponent<MeshFilter>();
     }
 
     private float[,] GenerateNoise()
     {
-        if (mapManager.MapSize.x == 0 || mapManager.MapSize.y == 0)
+        if (mapSize.x == 0 || mapSize.y == 0)
         {
             throw new System.Exception("MapSize is zero!");
         }
 
         int selectedSeed = randomSeed ? Random.Range(-10000, 10000) : seed;
-
-        int sizeX = mapManager.MapSize.x;
-        int sizeY = mapManager.MapSize.y;
+        
         float maxNoiseHeight = float.MaxValue;
         float minNoiseHeight = float.MinValue;
 
-        float[,] noise = new float[sizeX, sizeY];
+        float[,] noise = new float[mapSize.x, mapSize.y];
         System.Random random = new System.Random(selectedSeed);
         Vector2[] octaveOffsets = new Vector2[octaves];
         for (int i = 0; i < octaves; i++)
@@ -140,12 +145,12 @@ public class GenerationManager : MonoBehaviour
         }
 
         noiseScale = Mathf.Clamp(noiseScale, 0.01f, 10000f);
-        float halfWidth = sizeX / 2f;
-        float halfHeight = sizeY / 2f;
+        float halfWidth = mapSize.x / 2f;
+        float halfHeight = mapSize.y / 2f;
 
-        for (int x = 0; x < sizeX; x++)
+        for (int x = 0; x < mapSize.x; x++)
         {
-            for (int y = 0; y < sizeY; y++)
+            for (int y = 0; y < mapSize.y; y++)
             {
                 float amplitude = 1;
                 float frequency = 1;
@@ -184,41 +189,28 @@ public class GenerationManager : MonoBehaviour
         NullChecker();
 
         float[,] noiseMap = GenerateNoise();
-        Color[] colorMap = new Color[mapManager.MapSize.x * mapManager.MapSize.y];
+        Color[] colorMap = new Color[mapSize.x * mapSize.y];
         
-        for (int x = 0; x < mapManager.MapSize.x; x++)
+        for (int x = 0; x < mapSize.x; x++)
         {
-            for (int y = 0; y < mapManager.MapSize.y; y++)
+            for (int y = 0; y < mapSize.y; y++)
             {
                 float currentHeight = noiseMap[x, y];
                 for (int i = 0; i < terrainTypes.Length; i++)
                 {
                     if (!(currentHeight <= terrainTypes[i].height)) continue;
-                    colorMap[y * mapManager.MapSize.x + x] = terrainTypes[i].color;
+                    colorMap[y * mapSize.x + x] = terrainTypes[i].color;
                     break;
                 }
             }
         }
 
-        switch (renderMode)
-        {
-            case RenderMode.HEIGHTMAP:
-                RenderTexture(TextureFromHeightMap(noiseMap));
-                break;
-            case RenderMode.COLORMAP:
-                RenderTexture(TextureFromColorMap(colorMap));
-                break;
-            case RenderMode.MESH:
-                RenderMesh(GenerateMesh(noiseMap), TextureFromColorMap(colorMap));
-                break;
-            default:
-                throw new System.Exception("Default switch case, this should not happen!");
-        }
+        RenderMesh(GenerateMesh(noiseMap), TextureFromColorMap(colorMap));
     }
 
     private Texture2D TextureFromColorMap(Color[] colorMap)
     {
-        Texture2D texture2D = new Texture2D(mapManager.MapSize.x, mapManager.MapSize.y)
+        Texture2D texture2D = new Texture2D(mapSize.x, mapSize.y)
         {
             filterMode = FilterMode.Point,
             wrapMode = TextureWrapMode.Clamp
@@ -228,30 +220,7 @@ public class GenerationManager : MonoBehaviour
 
         return texture2D;
     }
-    
-    private Texture2D TextureFromHeightMap(float[,] heightMap)
-    {
-        int width = heightMap.GetLength(0);
-        int height = heightMap.GetLength(1);
-        Color[] color = new Color[width * height];
 
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                color[y * width + x] = Color.Lerp(Color.black, Color.white, heightMap[x, y]);
-            }
-        }
-        
-        return TextureFromColorMap(color);
-    }
-
-    private void RenderTexture(Texture2D texture2D)
-    {
-        renderer.sharedMaterial.mainTexture = texture2D;
-        // renderer.transform.localScale = new Vector3(texture2D.width, 1, texture2D.height);
-    }
-    
     private void RenderMesh(MeshData meshData, Texture2D texture2D)
     {
         meshFilter.sharedMesh = meshData.CreateMesh();
