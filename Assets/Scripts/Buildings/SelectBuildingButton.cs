@@ -7,6 +7,6 @@ public class SelectBuildingButton : MonoBehaviour
     [SerializeField] private Building buildingType = null;
     public void CallSelectedBuilding()
     {
-        BuildingManager.Instance.SelectedBuilding(buildingType);
+        BuildingManager.Instance.SelectBuilding(buildingType);
     }
 }
