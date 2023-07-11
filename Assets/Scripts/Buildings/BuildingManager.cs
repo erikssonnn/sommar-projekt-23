@@ -45,11 +45,10 @@ public class BuildingManager : MonoBehaviour
         Ray mouseToScreenRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         // Raycast from mouse position to world position
         RaycastHit hit;
-        bool didHit = Physics.Raycast(mouseToScreenRay, out hit, Mathf.Infinity);
-        if(!didHit) return;
+        if(!Physics.Raycast(mouseToScreenRay, out hit, Mathf.Infinity)) return;
 
         // Get the mouse position as an int
-        Vector3Int mousePositionInt = new Vector3Int((int)hit.point.x, (int)hit.point.y, (int)hit.point.z);
+        Vector3Int mousePositionInt = new Vector3Int(Mathf.RoundToInt(hit.point.x), Mathf.RoundToInt(hit.point.y), Mathf.RoundToInt(hit.point.z));
 
         if(Input.GetKeyDown(KeyCode.Mouse0))
         {
@@ -72,7 +71,7 @@ public class BuildingManager : MonoBehaviour
     /// Called from UI buttons to select a building type
     /// </summary>
     /// <param name="buildingType"> The type of building to be selected </param>
-    public void SelectedBuilding(Building buildingType)
+    public void SelectBuilding(Building buildingType)
     {
         // Throw error if no building type is selected
         if (!buildingType)
@@ -81,6 +80,13 @@ public class BuildingManager : MonoBehaviour
         }
 
         currentlySelectedBuilding = buildingType;
+    }
+    /// <summary>
+    /// Called you want to deselect the currently selected building
+    /// </summary>
+    public void DeselectBuilding()
+    {
+        currentlySelectedBuilding = null;
     }
 
     private void PreviewBuilding(Vector3Int position)
