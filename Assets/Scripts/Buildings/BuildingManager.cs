@@ -45,7 +45,8 @@ public class BuildingManager : MonoBehaviour
         Ray mouseToScreenRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         // Raycast from mouse position to world position
         RaycastHit hit;
-        if(!Physics.Raycast(mouseToScreenRay, out hit, Mathf.Infinity)) return;
+        bool didHit = Physics.Raycast(mouseToScreenRay, out hit, Mathf.Infinity);
+        if(!didHit) return;
 
         // Get the mouse position as an int
         Vector3Int mousePositionInt = new Vector3Int(Mathf.RoundToInt(hit.point.x), Mathf.RoundToInt(hit.point.y), Mathf.RoundToInt(hit.point.z));
