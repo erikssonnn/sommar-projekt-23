@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class SelectBuildingButton : MonoBehaviour
 {
-    [SerializeField] private Building BuildingType = null;
+    [SerializeField] private Building buildingType = null;
     public void CallSelectedBuilding()
     {
-        BuildingManager.Instance.SelectedBuilding(BuildingType);
+        BuildingManager.Instance.SelectedBuilding(buildingType);
     }
 }
