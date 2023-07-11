@@ -123,90 +123,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &425177180
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 425177183}
-  - component: {fileID: 425177182}
-  - component: {fileID: 425177181}
-  m_Layer: 0
-  m_Name: _gameManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &425177181
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 425177180}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a4bed956ba077944b88e7b5853c3fac9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  renderMode: 2
-  terrainTypes:
-  - name: Water
-    height: 0.28
-    color: {r: 0, g: 0.33589864, b: 1, a: 1}
-  - name: Beach
-    height: 0.39
-    color: {r: 0.9433962, g: 0.82654667, b: 0.6897472, a: 1}
-  - name: Grass
-    height: 0.57
-    color: {r: 0.2731399, g: 0.6226415, b: 0.28563097, a: 1}
-  - name: Trees
-    height: 0.68
-    color: {r: 0.14898539, g: 0.33962262, b: 0.15541136, a: 1}
-  - name: Mountains
-    height: 1
-    color: {r: 0.3679245, g: 0.24941416, b: 0.16834283, a: 1}
-  mapParent: {fileID: 2036137161}
-  seed: 120
-  randomSeed: 0
-  noiseScale: 169.8
-  octaves: 2
-  persistance: 0.23
-  lacunarity: 15
-  offset: {x: -6.8, y: 113.72}
---- !u!114 &425177182
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 425177180}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3337d9b833bd61b4a9a319f052eed611, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mapSize: {x: 100, y: 100}
---- !u!4 &425177183
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 425177180}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!43 &605807852
+--- !u!43 &424865931
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -370,6 +287,93 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!1 &425177180
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 425177183}
+  - component: {fileID: 425177182}
+  - component: {fileID: 425177181}
+  m_Layer: 0
+  m_Name: _gameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &425177181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 425177180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4bed956ba077944b88e7b5853c3fac9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  terrainTypes:
+  - name: Water
+    height: 0.28
+    color: {r: 0, g: 0.33589864, b: 1, a: 1}
+    occupiedByDefault: 1
+  - name: Beach
+    height: 0.39
+    color: {r: 0.9433962, g: 0.82654667, b: 0.6897472, a: 1}
+    occupiedByDefault: 0
+  - name: Grass
+    height: 0.57
+    color: {r: 0.2731399, g: 0.6226415, b: 0.28563097, a: 1}
+    occupiedByDefault: 0
+  - name: Trees
+    height: 0.68
+    color: {r: 0.14898539, g: 0.33962262, b: 0.15541136, a: 1}
+    occupiedByDefault: 0
+  - name: Mountains
+    height: 1
+    color: {r: 0.3679245, g: 0.24941416, b: 0.16834283, a: 1}
+    occupiedByDefault: 0
+  mapParent: {fileID: 2036137161}
+  seed: 120
+  randomSeed: 0
+  noiseScale: 169.8
+  octaves: 2
+  persistance: 0.23
+  lacunarity: 15
+  offset: {x: -6.8, y: 113.72}
+--- !u!114 &425177182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 425177180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3337d9b833bd61b4a9a319f052eed611, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mapSize: {x: 100, y: 100}
+--- !u!4 &425177183
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 425177180}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &736621070
 GameObject:
   m_ObjectHideFlags: 0
@@ -772,7 +776,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2036137160}
-  m_Mesh: {fileID: 605807852}
+  m_Mesh: {fileID: 424865931}
 --- !u!4 &2138649752 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a4dd88d0c9f58e044a6646437254beef, type: 3}

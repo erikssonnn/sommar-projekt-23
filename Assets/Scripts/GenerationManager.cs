@@ -1,26 +1,8 @@
-using UnityEditor;
+using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
 using Texture2D = UnityEngine.Texture2D;
-
-[CustomEditor(typeof(GenerationManager))]
-public class GenerationManagerEditor : Editor
-{
-    public override void OnInspectorGUI()
-    {
-        GenerationManager generationManager = (GenerationManager)target;
-        if (DrawDefaultInspector())
-        {
-            generationManager.GenerateMap();
-        }
-
-        if (GUILayout.Button("GENERATE"))
-        {
-            generationManager.GenerateMap();
-        }
-    }
-}
 
 [System.Serializable]
 public struct TerrainType
@@ -28,23 +10,17 @@ public struct TerrainType
     public string name;
     public float height;
     public Color color;
+    public bool occupiedByDefault;
 }
-
-public enum RenderMode
-{
-    HEIGHTMAP,
-    COLORMAP,
-    MESH
-};
 
 public class MeshData
 {
     public readonly Vector3[] vertices;
     private readonly int[] triangles;
     public readonly Vector2[] uvs;
-    
+
     private int triangleIndex;
-    
+
     public MeshData(int meshWidth, int meshHeight)
     {
         vertices = new Vector3[meshWidth * meshHeight];
@@ -75,20 +51,17 @@ public class MeshData
 
 public class GenerationManager : MonoBehaviour
 {
-    [Header("MAIN: ")]
-    [SerializeField] private RenderMode renderMode = RenderMode.HEIGHTMAP;
-    [SerializeField] private TerrainType[] terrainTypes = null;
-    
-    [Header("ASSIGNABLE: ")]
-    [SerializeField] private Transform mapParent = null;
+    [Header("MAIN: ")] [SerializeField] private TerrainType[] terrainTypes = null;
 
-    [Header("NOISE: ")] 
-    [SerializeField] private int seed = 0;
+    [Header("ASSIGNABLE: ")] [SerializeField]
+    private Transform mapParent = null;
+
+    [Header("NOISE: ")] [SerializeField] private int seed = 0;
     [SerializeField] private bool randomSeed = false;
     [SerializeField] private float noiseScale = 1.0f;
-    [Range(0, 5)][SerializeField] private int octaves = 0;
-    [Range(0, 0.5f)][SerializeField] private float persistance = 0.0f;
-    [Range(0, 25)][SerializeField] private float lacunarity = 0.0f;
+    [Range(0, 5)] [SerializeField] private int octaves = 0;
+    [Range(0, 0.5f)] [SerializeField] private float persistance = 0.0f;
+    [Range(0, 25)] [SerializeField] private float lacunarity = 0.0f;
     [SerializeField] private Vector2 offset = Vector2.zero;
 
     private MapManager mapManager = null;
@@ -99,13 +72,13 @@ public class GenerationManager : MonoBehaviour
 
     private void Start()
     {
+        NullChecker();
         GenerateMap();
     }
 
     private void NullChecker()
     {
-        mapManager = GetComponent<MapManager>(); //DEBUG
-        //mapManager = MapManager.Instance; //Cant get get instance in editor, only in play mode
+        mapManager = MapManager.Instance;
         if (mapManager == null)
         {
             throw new System.Exception("Cant find mapManager instance!");
@@ -130,7 +103,7 @@ public class GenerationManager : MonoBehaviour
         }
 
         int selectedSeed = randomSeed ? Random.Range(-10000, 10000) : seed;
-        
+
         float maxNoiseHeight = float.MaxValue;
         float minNoiseHeight = float.MinValue;
 
@@ -183,13 +156,13 @@ public class GenerationManager : MonoBehaviour
         return noise;
     }
 
-    public void GenerateMap()
+    private void GenerateMap()
     {
-        // This was added here to have the terrain generator work in editor mode
-        NullChecker();
-
         float[,] noiseMap = GenerateNoise();
         Color[] colorMap = new Color[mapSize.x * mapSize.y];
+
+        float halfWidth = mapSize.x / 2f;
+        float halfHeight = mapSize.y / 2f;
         
         for (int x = 0; x < mapSize.x; x++)
         {
@@ -200,6 +173,16 @@ public class GenerationManager : MonoBehaviour
                 {
                     if (!(currentHeight <= terrainTypes[i].height)) continue;
                     colorMap[y * mapSize.x + x] = terrainTypes[i].color;
+                    if (terrainTypes[i].occupiedByDefault)
+                    {
+                        // weird solution, agree on a new standard
+                        List<Vector2Int> positions = new List<Vector2Int>
+                        {
+                            new Vector2Int(Mathf.RoundToInt(x - halfWidth), Mathf.RoundToInt(y - halfHeight))
+                        };
+                        mapManager.OccupyPositions(positions);
+                    }
+
                     break;
                 }
             }
@@ -236,19 +219,20 @@ public class GenerationManager : MonoBehaviour
 
         MeshData meshData = new MeshData(width, height);
         int vertexIndex = 0;
-        
+
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
                 meshData.vertices[vertexIndex] = new Vector3(topLeftX + x, heightMap[x, y], topLeftZ - y);
                 meshData.uvs[vertexIndex] = new Vector2(x / (float)width, y / (float)height);
-                
+
                 if (x < width - 1 && y < height - 1)
                 {
                     meshData.AddTriangle(vertexIndex, vertexIndex + width + 1, vertexIndex + width);
                     meshData.AddTriangle(vertexIndex + width + 1, vertexIndex, vertexIndex + 1);
                 }
+
                 vertexIndex++;
             }
         }
