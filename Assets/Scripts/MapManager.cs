@@ -3,6 +3,23 @@ using System.Linq;
 using UnityEngine;
 using Vector3Int = UnityEngine.Vector3Int;
 
+[System.Serializable]
+public class Tile
+{
+    public enum TileType
+    {
+        DEFAULT,
+        RIVER
+    };
+
+    public TileType tileType;
+
+    public Tile(TileType tileType)
+    {
+        this.tileType = tileType;
+    }
+}
+
 public class MapManager : MonoBehaviour
 {
     [SerializeField] private Vector2Int mapSize = Vector2Int.zero;
@@ -12,9 +29,9 @@ public class MapManager : MonoBehaviour
         get => mapSize;
     }
 
-    private static readonly List<Vector3Int> map = new List<Vector3Int>();
-    public static MapManager Instance { get; set; }
-    
+    public static MapManager Instance { get; private set; }
+    public Dictionary<Vector3Int, Tile> Map { get; private set; } = null;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -29,7 +46,7 @@ public class MapManager : MonoBehaviour
 
     public bool IsObstructed(Vector3Int position)
     {
-        return map.Contains(position);
+        return Map.ContainsKey(position);
     }
 
     private bool OutsideMapBounds(Vector3Int position)
@@ -38,19 +55,19 @@ public class MapManager : MonoBehaviour
                position.z < -mapSize.y || position.z > mapSize.y;
     }
 
-    public void AddPositions(List<Vector3Int> positions)
+    public void OccupyPositions(List<Vector3Int> positions)
     {
         if (!positions.Any())
         {
             throw new System.Exception("Tried to add zero new positions to the map");
         }
-        foreach (Vector3Int t in positions.Where(t => !map.Contains(t) && !OutsideMapBounds(t)))
+        foreach (Vector3Int t in positions.Where(t => !Map.ContainsKey(t) && !OutsideMapBounds(t)))
         {
-            map.Add(t);
+            Map.Add(t, new Tile(Tile.TileType.DEFAULT));
         }
     }
 
-    public void RemovePositions(List<Vector3Int> positions)
+    public void UnOccupyPositions(List<Vector3Int> positions)
     {
         if (!positions.Any())
         {
@@ -58,11 +75,11 @@ public class MapManager : MonoBehaviour
         }
         foreach (Vector3Int t in positions)
         {
-            if (!map.Contains(t) || OutsideMapBounds(t))
+            if (!Map.ContainsKey(t) || OutsideMapBounds(t))
             {
                 throw new System.Exception("Tried to remove a non existing position in " + name);
             }
-            map.Remove(t);
+            Map.Remove(t);
         }
     }
 }
