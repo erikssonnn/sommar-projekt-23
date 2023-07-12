@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Vector2Int = UnityEngine.Vector2Int;
 
 [System.Serializable]
 public class Tile
@@ -42,7 +43,7 @@ public class MapManager : MonoBehaviour
             Gizmos.DrawCube(new Vector3(position.x + 1, 0, position.y + 1), Vector3.one);
         }
     }
-
+    
     private void Awake()
     {
         if (Instance != null && Instance != this)
