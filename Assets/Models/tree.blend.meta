@@ -1,29 +1,9 @@
 fileFormatVersion: 2
-guid: 431bcd29489440d4eb64401e64045932
+guid: 2e3acf3c74d16af458fc3043b984c8ab
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: black
-    second: {fileID: 2100000, guid: 3bc9b25714d78524994954cae93d4fa0, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: stone
-    second: {fileID: 2100000, guid: 36b6e504448b8db4a98a6ba7fcc052af, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: stone_2
-    second: {fileID: 2100000, guid: 3867b6f035ac6c5429ad9a2141da0307, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: wood
-    second: {fileID: 2100000, guid: 2f5dd4d2a6f9e5b4daae1dfd56b8ed4b, type: 2}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
