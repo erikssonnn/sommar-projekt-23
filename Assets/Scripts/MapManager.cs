@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Vector3Int = UnityEngine.Vector3Int;
 
 [System.Serializable]
 public class Tile
