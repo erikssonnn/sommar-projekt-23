@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TEMP_Building
   m_EditorClassIdentifier: 
   buildingName: TEMP_Building
-  buildingObject: {fileID: 919132149155446097, guid: a4dd88d0c9f58e044a6646437254beef, type: 3}
+  buildingObject: {fileID: 919132149155446097, guid: 431bcd29489440d4eb64401e64045932, type: 3}
   resourceRequirements:
   - resourceName: Wood
     amount: 2

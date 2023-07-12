@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
@@ -62,7 +63,6 @@ public class GenerationManager : MonoBehaviour
     [SerializeField] private float noiseScale = 1.0f;
     [Range(0, 5)] [SerializeField] private int octaves = 0;
     [SerializeField] private float heightMultiplier = 0.0f;
-    [SerializeField] private AnimationCurve heightCurve = null;
     [Range(0, 0.5f)] [SerializeField] private float persistance = 0.0f;
     [Range(0, 25)] [SerializeField] private float lacunarity = 0.0f;
     [SerializeField] private Vector2 offset = Vector2.zero;
@@ -195,6 +195,7 @@ public class GenerationManager : MonoBehaviour
 
         meshFilter.sharedMesh = meshData.CreateMesh();
         meshRenderer.sharedMaterial.mainTexture = texture2D;
+        MeshCollider meshCollider = mapParent.AddComponent<MeshCollider>();
     }
 
     private Texture2D TextureFromColorMap(Color[] colorMap)

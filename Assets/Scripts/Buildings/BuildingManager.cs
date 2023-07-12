@@ -11,6 +11,8 @@ public class BuildingManager : MonoBehaviour
     
     [SerializeField] private Color obstructedColor = Color.red;
 
+    [SerializeField] private Building building = null;
+
     private Building currentlySelectedBuilding = null;
     private GameObject previewBuildingObject = null;
     private Quaternion previewBuildingRotation = Quaternion.identity;
@@ -44,6 +46,11 @@ public class BuildingManager : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            SelectBuilding(building);
+        }
+        
         if(!currentlySelectedBuilding) return;
 
         // Get a ray with mouse pointer position to world position
@@ -156,7 +163,7 @@ public class BuildingManager : MonoBehaviour
             return;
         }
         // Add points to the map
-        MapManager.Instance.AddPositions(positions);
+        MapManager.Instance.OccupyPositions(positions);
 
         // FIXME: Check if resources are available
         foreach (ResourceRequirement t in currentlySelectedBuilding.GetResourceRequirements())
