@@ -3,14 +3,19 @@ using UnityEngine;
 
 public class BuildingManager : MonoBehaviour
 {
-    /*[SerializeField]*/ private bool useJobs = false;
     [SerializeField] private Material previewMaterial = null;
 
     [SerializeField] private Transform buildingParent = null;
 
+    [SerializeField] private Color previewColor = Color.white;
+    
+    [SerializeField] private Color obstructedColor = Color.red;
+
     private Building currentlySelectedBuilding = null;
     private GameObject previewBuildingObject = null;
     private Quaternion previewBuildingRotation = Quaternion.identity;
+
+    private Vector3Int testedPosition;
 
     public static BuildingManager Instance { get; set; }
     private void Awake()
@@ -54,6 +59,11 @@ public class BuildingManager : MonoBehaviour
         {
             PlaceBuilding(mousePositionInt);
         }
+        else if(Input.GetKeyDown(KeyCode.Mouse1))
+        {
+            DeselectBuilding();
+            Destroy(previewBuildingObject);
+        }
         // Rotate the preview building
         else if(Input.GetKeyDown(KeyCode.Q))
         {
@@ -95,6 +105,7 @@ public class BuildingManager : MonoBehaviour
         {
             //Instanciate a new empty object with the currently selected building mesh but replace all the materials with preview material
             previewBuildingObject = Instantiate(currentlySelectedBuilding.GetObject(), position, previewBuildingRotation);
+            previewBuildingObject.transform.localScale *= 1.05f;
             previewBuildingObject.name = "Previewing " + currentlySelectedBuilding.GetBuildingName();
             Material[] mat = previewBuildingObject.GetComponent<MeshRenderer>().materials;
             // Loop through all the materials in the preview building and replace the materials with the preview material
@@ -106,9 +117,27 @@ public class BuildingManager : MonoBehaviour
         }
         else
         {
-            // Move the preview building to the mouse position
-            previewBuildingObject.transform.position = position;
-            previewBuildingObject.transform.rotation = previewBuildingRotation;
+            if(testedPosition == position)
+            {
+                // Move the preview building to the mouse position
+                previewBuildingObject.transform.position = position;
+                previewBuildingObject.transform.rotation = previewBuildingRotation;
+                if(CalculateIsOverlaping(previewBuildingObject, out _))
+                {
+                    foreach (Material t in previewBuildingObject.GetComponent<MeshRenderer>().materials)
+                    {
+                        t.color = obstructedColor;
+                    }
+                }
+                else
+                {
+                    foreach (Material t in previewBuildingObject.GetComponent<MeshRenderer>().materials)
+                    {
+                        t.color = previewColor;
+                    }
+                }
+            }
+            testedPosition = position;
         }
     }
 
@@ -118,44 +147,58 @@ public class BuildingManager : MonoBehaviour
         // Instanciate a new building
         GameObject newBuilding = Instantiate(currentlySelectedBuilding.GetObject(), position, previewBuildingRotation, buildingParent);
         newBuilding.name = currentlySelectedBuilding.GetBuildingName();
-        // Get bounds of the building
-        Bounds bounds = newBuilding.GetComponent<MeshRenderer>().bounds;
-
-        Vector3Int transformPosition = new Vector3Int((int)newBuilding.transform.position.x, (int)newBuilding.transform.position.y, (int)newBuilding.transform.position.z);
-        float startTime = Time.realtimeSinceStartup;
-        // Get all the positions that the building will occupy using half extends
-        List<Vector3Int> positions = new List<Vector3Int>();
-        for (int x = (int)-bounds.extents.x; x < bounds.extents.x; x++)
+        
+        List<Vector2Int> positions;
+        if(CalculateIsOverlaping(newBuilding,out positions))
         {
-            for (int z = (int)-bounds.extents.z; z < bounds.extents.z; z++)
-            {
-                if(!useJobs && MapManager.Instance.IsObstructed(new Vector3Int(transformPosition.x + x, 0, transformPosition.z + z)))
-                {
-                    // Later show a popup in corner of screen saying position is obstructed
-                    Debug.LogWarning("Position is obstructed");
-                    Destroy(newBuilding);
-                    return;
-                }
-                positions.Add(new Vector3Int(transformPosition.x + x, 0, transformPosition.z + z));
-            }
-        }
-        // Debug.Log("Getting positions took " + (Time.realtimeSinceStartup - startTime) * 1000 + "ms");
-
-        // Check if the position is obstructed
-        if (useJobs && MapManager.Instance.IsObstructed(positions.ToArray()))
-        {
-            // Later show a popup in corner of screen saying position is obstructed
-            Debug.LogWarning("Position is obstructed");
+            // Destroy the new building
             Destroy(newBuilding);
             return;
         }
         // Add points to the map
         MapManager.Instance.AddPositions(positions);
 
-        // TODO: Check if resources are available
+        // FIXME: Check if resources are available
+        foreach (ResourceRequirement t in currentlySelectedBuilding.GetResourceRequirements())
+        {
+            if(false /* Check current resource amount against t */)
+            {
+                Destroy(newBuilding);
+                return;
+            }
+            Debug.Log(t.resourceName + " " + t.amount);
+        }
+        // FIXME: Deduct resources from resource manager
+
+        // FIXME: Spawn citizens
+        // CitizenManager.Instance.SpawnCitizens(currentlySelectedBuilding.GetCitizensToSpawn(), position);
 
         // Destroy the preview building
         Destroy(previewBuildingObject);
+    }
+
+    private bool CalculateIsOverlaping(GameObject newBuilding, out List<Vector2Int> BuildingPositions)
+    {
+        // Get bounds of the building
+        Bounds bounds = newBuilding.GetComponent<MeshRenderer>().bounds;
+
+        Vector3Int transformPosition = new Vector3Int((int)newBuilding.transform.position.x, (int)newBuilding.transform.position.y, (int)newBuilding.transform.position.z);
+        // Get all the positions that the building will occupy using half extends
+        BuildingPositions = new List<Vector2Int>();
+        for (int x = (int)-bounds.extents.x; x < bounds.extents.x; x++)
+        {
+            for (int z = (int)-bounds.extents.z; z < bounds.extents.z; z++)
+            {
+                if(MapManager.Instance.IsObstructed(new Vector2Int(transformPosition.x + x, transformPosition.z + z)))
+                {
+                    // Later show a popup in corner of screen saying position is obstructed
+                    Debug.LogWarning("Position is obstructed");
+                    return true;
+                }
+                BuildingPositions.Add(new Vector2Int(transformPosition.x + x, transformPosition.z + z));
+            }
+        }
+        return false;
     }
 
     // On draw gizmos

@@ -14,3 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildingName: TEMP_Building
   buildingObject: {fileID: 919132149155446097, guid: a4dd88d0c9f58e044a6646437254beef, type: 3}
+  resourceRequirements:
+  - resourceName: Wood
+    amount: 2
+  - resourceName: Stone
+    amount: 3
+  CitizensToSpawn: 0
