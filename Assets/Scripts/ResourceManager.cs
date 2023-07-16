@@ -1,12 +1,14 @@
+using System.Reflection;
 using UnityEngine;
 
-public struct ResourceClass
+[System.Serializable]
+public class ResourceClass
 {
-    private int food;
-    private int wood;
-    private int stone;
-    private int tin;
-    private int copper;
+    public int food;
+    public int wood;
+    public int stone;
+    public int tin;
+    public int copper;
     
     public ResourceClass(int food, int wood, int stone, int tin, int copper)
     {
@@ -16,20 +18,18 @@ public struct ResourceClass
         this.tin = tin;
         this.copper = copper;
     }
-    
-    public void ChangeResources(ResourceClass changeAmount)
-    {
-        food += changeAmount.food;
-        wood += changeAmount.wood;
-        stone += changeAmount.stone;
-        tin += changeAmount.tin;
-        copper += changeAmount.copper;
-    }
 }
 
 public class ResourceManager : MonoBehaviour
 {
-    public ResourceClass CurrentResources { get; } = new ResourceClass();
+    public ResourceClass CurrentResources { get; } = new ResourceClass(
+            100,
+            50,
+            0,
+            0,
+            0
+        );
+
     public static ResourceManager Instance { get; private set; }
 
     private void Awake()
@@ -42,5 +42,29 @@ public class ResourceManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+    }
+    
+    public void ChangeResources(ResourceClass changeAmount)
+    {
+        CurrentResources.food += changeAmount.food;
+        CurrentResources.wood += changeAmount.wood;
+        CurrentResources.stone += changeAmount.stone;
+        CurrentResources.tin += changeAmount.tin;
+        CurrentResources.copper += changeAmount.copper;
+    }
+    
+    public bool HasEnoughResources(ResourceClass costResources)
+    {
+        for (int i = 0; i < typeof(ResourceClass).GetProperties().Length; i++)
+        {
+            PropertyInfo resourceProperty = typeof(ResourceClass).GetProperties()[i];
+            int requiredAmount = (int)resourceProperty.GetValue(costResources);
+            int currentAmount = (int)resourceProperty.GetValue(CurrentResources);
+
+            if (requiredAmount > currentAmount)
+                return false;
+        }
+
+        return true;
     }
 }

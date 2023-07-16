@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ScriptableObjects;
 using UnityEngine;
 
 public class BuildingManager : MonoBehaviour
@@ -18,6 +19,7 @@ public class BuildingManager : MonoBehaviour
     private Quaternion previewBuildingRotation = Quaternion.identity;
 
     private Vector3Int testedPosition;
+    private ResourceManager resourceManager = null;
 
     public static BuildingManager Instance { get; set; }
     private void Awake()
@@ -37,6 +39,12 @@ public class BuildingManager : MonoBehaviour
         if (!buildingParent)
         {
             throw new System.Exception("BuildingParent was not set in BuildingManager");
+        }
+
+        resourceManager = ResourceManager.Instance;
+        if (resourceManager == null)
+        {
+            throw new System.Exception("Cant find ResourceManager instance");
         }
         // TODO: Dirty fix for now!! Fix later??
         // Rotate -90 degrees on x axis to make the buildings face up
@@ -111,9 +119,9 @@ public class BuildingManager : MonoBehaviour
         if (!previewBuildingObject)
         {
             //Instanciate a new empty object with the currently selected building mesh but replace all the materials with preview material
-            previewBuildingObject = Instantiate(currentlySelectedBuilding.GetObject(), position, previewBuildingRotation);
+            previewBuildingObject = Instantiate(currentlySelectedBuilding.obj, position, previewBuildingRotation);
             previewBuildingObject.transform.localScale *= 1.05f;
-            previewBuildingObject.name = "Previewing " + currentlySelectedBuilding.GetBuildingName();
+            previewBuildingObject.name = "Previewing " + currentlySelectedBuilding.name;
             Material[] mat = previewBuildingObject.GetComponent<MeshRenderer>().materials;
             // Loop through all the materials in the preview building and replace the materials with the preview material
             for (int i = 0; i < mat.Length; i++)
@@ -152,8 +160,8 @@ public class BuildingManager : MonoBehaviour
     private void PlaceBuilding(Vector3Int position)
     {
         // Instanciate a new building
-        GameObject newBuilding = Instantiate(currentlySelectedBuilding.GetObject(), position, previewBuildingRotation, buildingParent);
-        newBuilding.name = currentlySelectedBuilding.GetBuildingName();
+        GameObject newBuilding = Instantiate(currentlySelectedBuilding.obj, position, previewBuildingRotation, buildingParent);
+        newBuilding.name = currentlySelectedBuilding.name;
         
         List<Vector2Int> positions;
         if(CalculateIsOverlaping(newBuilding,out positions))
@@ -165,18 +173,13 @@ public class BuildingManager : MonoBehaviour
         // Add points to the map
         MapManager.Instance.OccupyPositions(positions);
 
-        // FIXME: Check if resources are available
-        foreach (ResourceRequirement t in currentlySelectedBuilding.GetResourceRequirements())
-        {
-            if(false /* Check current resource amount against t */)
-            {
-                Destroy(newBuilding);
-                return;
-            }
-            Debug.Log(t.resourceName + " " + t.amount);
-        }
-        // FIXME: Deduct resources from resource manager
-
+        // VERIFY CHANGE: check if player has enough resources
+        ResourceClass resourceCost = building.resourceRequirements;
+        if (!resourceManager.HasEnoughResources(resourceCost)) return;
+        
+        //VERIFY CHANGE: player has enough resources, remove them from the ResourceManager
+        resourceManager.ChangeResources(resourceCost);
+        
         // FIXME: Spawn citizens
         // CitizenManager.Instance.SpawnCitizens(currentlySelectedBuilding.GetCitizensToSpawn(), position);
 
