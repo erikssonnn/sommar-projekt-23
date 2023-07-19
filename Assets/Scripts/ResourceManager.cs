@@ -8,7 +8,7 @@ public class ResourceClass
     public int stone;
     public int tin;
     public int copper;
-    
+
     public ResourceClass(int food, int wood, int stone, int tin, int copper)
     {
         this.food = food;
@@ -22,12 +22,12 @@ public class ResourceClass
 public class ResourceManager : MonoBehaviour
 {
     public ResourceClass CurrentResources { get; } = new ResourceClass(
-            100,
-            50,
-            0,
-            0,
-            0
-        );
+        100,
+        50,
+        0,
+        0,
+        0
+    );
 
     public static ResourceManager Instance { get; private set; }
 
@@ -42,7 +42,7 @@ public class ResourceManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
-    
+
     public void ChangeResources(ResourceClass changeAmount)
     {
         CurrentResources.food += changeAmount.food;
@@ -57,7 +57,7 @@ public class ResourceManager : MonoBehaviour
         CurrentResources.tin = Mathf.Clamp(CurrentResources.tin, 0, 100000);
         CurrentResources.copper = Mathf.Clamp(CurrentResources.copper, 0, 100000);
     }
-    
+
     public bool HasEnoughResources(ResourceClass costResources)
     {
         return Mathf.Abs(costResources.food) <= CurrentResources.food &&
@@ -65,5 +65,18 @@ public class ResourceManager : MonoBehaviour
                Mathf.Abs(costResources.stone) <= CurrentResources.stone &&
                Mathf.Abs(costResources.tin) <= CurrentResources.tin &&
                Mathf.Abs(costResources.copper) <= CurrentResources.copper;
+    }
+
+    private void OnGUI()
+    {
+        GUIStyle style = new GUIStyle { fontSize = 20, 
+            fontStyle = FontStyle.Bold, 
+            normal = new GUIStyleState() { textColor = Color.white } };
+        string str = "FOOD: " + CurrentResources.food + 
+                     "\nWOOD: " + CurrentResources.wood +
+                     "\nSTONE: " + CurrentResources.stone +
+                     "\nTIN: " + CurrentResources.tin +
+                     "\nCOPPER: " + CurrentResources.copper;
+        GUI.Label(new Rect(10, 10, Screen.width / 2.0f, Screen.height / 2.0f), str, style);
     }
 }
