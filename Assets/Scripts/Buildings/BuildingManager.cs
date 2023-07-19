@@ -161,10 +161,8 @@ public class BuildingManager : MonoBehaviour
     private static bool CalculateIsOverlapping(GameObject newBuilding, out List<Vector2Int> buildingPositions)
     {
         Bounds bounds = newBuilding.GetComponent<MeshRenderer>().bounds;
-        Transform t = newBuilding.transform;
-
-        Vector3Int transformPosition = new Vector3Int(Mathf.RoundToInt(t.position.x),
-            Mathf.RoundToInt(t.position.y), Mathf.RoundToInt(t.position.z));
+        Vector3Int transformPosition = new Vector3Int(Mathf.RoundToInt(newBuilding.transform.position.x),
+            Mathf.RoundToInt(newBuilding.transform.position.y), Mathf.RoundToInt(newBuilding.transform.position.z));
 
         buildingPositions = Enumerable.Range((int)-bounds.extents.x, (int)bounds.size.x)
             .SelectMany(x => Enumerable.Range((int)-bounds.extents.z, (int)bounds.size.z)
