@@ -1,4 +1,4 @@
-// using System;
+using System;
 using UnityEngine;
 
 public class UIManager : MonoBehaviour
@@ -17,22 +17,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private RectTransform tooltipWindow;
     [SerializeField] private TMPro.TextMeshProUGUI tooltipText;
 
-    // private Action<string, Vector2> showTooltipAction;
-    // private Action hideTooltipAction;
-
-    private void OnEnable()
-    {
-        // showTooltipAction += ShowTooltip;
-        // hideTooltipAction += HideTooltip;
-        //EventManager.Instance.OnResourcesChanged += ChangeResources;
-    }
-    private void onDisable()
-    {
-        // showTooltipAction -= ShowTooltip;
-        // hideTooltipAction -= HideTooltip;
-        //EventManager.Instance.OnResourcesChanged -= ChangeResources;
-    }
-
     public static UIManager Instance { get; set; }
     private void Awake()
     {
@@ -47,6 +31,49 @@ public class UIManager : MonoBehaviour
     }
     private void Start()
     {
+        #region CheckReferences
+        // Check if all references are set
+        if (!pauseMenu)
+        {
+            throw new Exception("PauseMenu was not set in UIManager");
+        }
+        if (!hud)
+        {
+            throw new Exception("HUD was not set in UIManager");
+        }
+        if (!citizenText)
+        {
+            throw new Exception("CitizenText was not set in UIManager");
+        }
+        if (!foodText)
+        {
+            throw new Exception("FoodText was not set in UIManager");
+        }
+        if (!woodText)
+        {
+            throw new Exception("WoodText was not set in UIManager");
+        }
+        if (!stoneText)
+        {
+            throw new Exception("StoneText was not set in UIManager");
+        }
+        if (!tinText)
+        {
+            throw new Exception("TinText was not set in UIManager");
+        }
+        if (!copperText)
+        {
+            throw new Exception("CopperText was not set in UIManager");
+        }
+        if (!tooltipWindow)
+        {
+            throw new Exception("TooltipWindow was not set in UIManager");
+        }
+        if (!tooltipText)
+        {
+            throw new Exception("TooltipText was not set in UIManager");
+        }
+        #endregion
         HideTooltip();
     }
 
@@ -66,8 +93,18 @@ public class UIManager : MonoBehaviour
         tooltipWindow.gameObject.SetActive(false);
     }
 
-    public void ChangeResources()
+    public void TogglePauseMenu()
     {
-        
+        pauseMenu.SetActive(!pauseMenu.activeSelf);
+        hud.SetActive(!hud.activeSelf);
+    }
+
+    public void ChangeResources(ResourceClass CurrentResources)
+    {
+        foodText.text = CurrentResources.food.ToString();
+        woodText.text = CurrentResources.wood.ToString();
+        stoneText.text = CurrentResources.stone.ToString();
+        tinText.text = CurrentResources.tin.ToString();
+        copperText.text = CurrentResources.copper.ToString();
     }
 }

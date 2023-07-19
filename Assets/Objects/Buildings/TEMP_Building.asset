@@ -15,8 +15,8 @@ MonoBehaviour:
   name: TEMP_BUILDING
   obj: {fileID: 919132149155446097, guid: 71d3d0dc47578814db8d90c0036bc030, type: 3}
   resourceRequirements:
-    food: 0
-    wood: -25
+    food: -1
+    wood: -1
     stone: 0
     tin: 0
     copper: 0

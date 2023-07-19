@@ -22,8 +22,8 @@ public class ResourceClass
 public class ResourceManager : MonoBehaviour
 {
     public ResourceClass CurrentResources { get; } = new ResourceClass(
-        100,
-        50,
+        2,
+        3,
         0,
         0,
         0
@@ -43,6 +43,11 @@ public class ResourceManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    private void Start()
+    {
+        UIManager.Instance.ChangeResources(CurrentResources);
+    }
+
     public void ChangeResources(ResourceClass changeAmount)
     {
         CurrentResources.food += changeAmount.food;
@@ -56,6 +61,8 @@ public class ResourceManager : MonoBehaviour
         CurrentResources.stone = Mathf.Clamp(CurrentResources.stone, 0, 100000);
         CurrentResources.tin = Mathf.Clamp(CurrentResources.tin, 0, 100000);
         CurrentResources.copper = Mathf.Clamp(CurrentResources.copper, 0, 100000);
+
+        UIManager.Instance.ChangeResources(CurrentResources);
     }
 
     public bool HasEnoughResources(ResourceClass costResources)
