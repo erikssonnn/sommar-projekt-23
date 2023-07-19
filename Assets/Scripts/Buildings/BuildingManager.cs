@@ -1,25 +1,26 @@
 using System.Collections.Generic;
+using System.Linq;
+using ScriptableObjects;
 using UnityEngine;
 
 public class BuildingManager : MonoBehaviour
 {
     [SerializeField] private Material previewMaterial = null;
-
     [SerializeField] private Transform buildingParent = null;
-
     [SerializeField] private Color previewColor = Color.white;
-    
     [SerializeField] private Color obstructedColor = Color.red;
-
     [SerializeField] private Building building = null;
 
     private Building currentlySelectedBuilding = null;
     private GameObject previewBuildingObject = null;
     private Quaternion previewBuildingRotation = Quaternion.identity;
 
-    private Vector3Int testedPosition;
+    private ResourceManager resourceManager = null;
+    private new Camera camera = null;
+    private MeshRenderer previewRenderer = null;
 
-    public static BuildingManager Instance { get; set; }
+    public static BuildingManager Instance { get; private set; }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -34,187 +35,149 @@ public class BuildingManager : MonoBehaviour
 
     private void Start()
     {
+        camera = Camera.main;
+        if (camera == null)
+        {
+            throw new System.Exception("Cant find main camera");
+        }
+
         if (!buildingParent)
         {
             throw new System.Exception("BuildingParent was not set in BuildingManager");
         }
-        // TODO: Dirty fix for now!! Fix later??
-        // Rotate -90 degrees on x axis to make the buildings face up
+
+        resourceManager = ResourceManager.Instance;
+        if (resourceManager == null)
+        {
+            throw new System.Exception("Cant find ResourceManager instance");
+        }
+
         previewBuildingRotation = Quaternion.Euler(-90, 0, 0);
     }
 
-    // Update is called once per frame
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            SelectBuilding(building);
-        }
-        
-        if(!currentlySelectedBuilding) return;
+        if (!currentlySelectedBuilding) return;
 
-        // Get a ray with mouse pointer position to world position
-        Ray mouseToScreenRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        // Raycast from mouse position to world position
-        RaycastHit hit;
-        if(!Physics.Raycast(mouseToScreenRay, out hit, Mathf.Infinity)) return;
+        Ray mouseToScreenRay = camera.ScreenPointToRay(Input.mousePosition);
+        if (!Physics.Raycast(mouseToScreenRay, out RaycastHit hit, Mathf.Infinity)) return;
 
-        // Get the mouse position as an int
-        Vector3Int mousePositionInt = new Vector3Int(Mathf.RoundToInt(hit.point.x), Mathf.RoundToInt(hit.point.y), Mathf.RoundToInt(hit.point.z));
+        Vector3Int mousePositionInt = new Vector3Int(
+            Mathf.RoundToInt(hit.point.x),
+            Mathf.RoundToInt(hit.point.y),
+            Mathf.RoundToInt(hit.point.z));
 
-        if(Input.GetKeyDown(KeyCode.Mouse0))
+        if (Input.GetKeyDown(KeyCode.Mouse0))
         {
             PlaceBuilding(mousePositionInt);
+            return;
         }
-        else if(Input.GetKeyDown(KeyCode.Mouse1))
+
+        if (Input.GetKeyDown(KeyCode.Mouse1))
         {
-            DeselectBuilding();
-            Destroy(previewBuildingObject);
+            CancelBuilding();
+            return;
         }
-        // Rotate the preview building
-        else if(Input.GetKeyDown(KeyCode.Q))
-        {
-            previewBuildingRotation *= Quaternion.Euler(0, 0, -90);
-        }
-        else if(Input.GetKeyDown(KeyCode.E))
+
+        if (Input.GetKeyDown(KeyCode.Q))
         {
             previewBuildingRotation *= Quaternion.Euler(0, 0, -90);
         }
-        
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            previewBuildingRotation *= Quaternion.Euler(0, 0, -90);
+        }
+
         PreviewBuilding(mousePositionInt);
     }
 
-    /// <summary>
-    /// Called from UI buttons to select a building type
-    /// </summary>
-    /// <param name="buildingType"> The type of building to be selected </param>
     public void SelectBuilding(Building buildingType)
     {
-        // Throw error if no building type is selected
         if (!buildingType)
         {
             throw new System.Exception("BuildingType was set to null, please set a building type in UI button");
         }
 
+        ResourceClass resourceCost = building.resourceRequirements;
+        if (!resourceManager.HasEnoughResources(resourceCost)) return;
         currentlySelectedBuilding = buildingType;
     }
-    /// <summary>
-    /// Called you want to deselect the currently selected building
-    /// </summary>
-    public void DeselectBuilding()
+
+    private void CancelBuilding()
     {
         currentlySelectedBuilding = null;
+        Destroy(previewBuildingObject);
     }
 
     private void PreviewBuilding(Vector3Int position)
     {
         if (!previewBuildingObject)
         {
-            //Instanciate a new empty object with the currently selected building mesh but replace all the materials with preview material
-            previewBuildingObject = Instantiate(currentlySelectedBuilding.GetObject(), position, previewBuildingRotation);
+            previewBuildingObject = Instantiate(currentlySelectedBuilding.obj, position, previewBuildingRotation);
             previewBuildingObject.transform.localScale *= 1.05f;
-            previewBuildingObject.name = "Previewing " + currentlySelectedBuilding.GetBuildingName();
-            Material[] mat = previewBuildingObject.GetComponent<MeshRenderer>().materials;
-            // Loop through all the materials in the preview building and replace the materials with the preview material
-            for (int i = 0; i < mat.Length; i++)
-            {
-                mat[i] = previewMaterial;
-            }
-            previewBuildingObject.GetComponent<MeshRenderer>().materials = mat;
+            previewBuildingObject.name = "Previewing " + currentlySelectedBuilding.name;
+
+            previewRenderer = previewBuildingObject.GetComponent<MeshRenderer>();
+            Material[] meshMaterials = previewRenderer.materials;
+            meshMaterials = meshMaterials.Select(mat => previewMaterial).ToArray();
+            previewBuildingObject.GetComponent<MeshRenderer>().materials = meshMaterials;
         }
-        else
+
+        previewBuildingObject.transform.position = position;
+        previewBuildingObject.transform.rotation = previewBuildingRotation;
+
+        if (previewRenderer == null)
         {
-            if(testedPosition == position)
-            {
-                // Move the preview building to the mouse position
-                previewBuildingObject.transform.position = position;
-                previewBuildingObject.transform.rotation = previewBuildingRotation;
-                if(CalculateIsOverlaping(previewBuildingObject, out _))
-                {
-                    foreach (Material t in previewBuildingObject.GetComponent<MeshRenderer>().materials)
-                    {
-                        t.color = obstructedColor;
-                    }
-                }
-                else
-                {
-                    foreach (Material t in previewBuildingObject.GetComponent<MeshRenderer>().materials)
-                    {
-                        t.color = previewColor;
-                    }
-                }
-            }
-            testedPosition = position;
+            throw new System.Exception("Something went wrong, this should not be able to be null");
         }
+        
+        Color selectedColor = CalculateIsOverlapping(previewBuildingObject, out _) ? obstructedColor : previewColor;
+        previewRenderer.materials.ToList().ForEach(mat => mat.color = selectedColor);
     }
 
-    // TODO: Convert overlaping check to job system
     private void PlaceBuilding(Vector3Int position)
     {
-        // Instanciate a new building
-        GameObject newBuilding = Instantiate(currentlySelectedBuilding.GetObject(), position, previewBuildingRotation, buildingParent);
-        newBuilding.name = currentlySelectedBuilding.GetBuildingName();
-        
-        List<Vector2Int> positions;
-        if(CalculateIsOverlaping(newBuilding,out positions))
-        {
-            // Destroy the new building
-            Destroy(newBuilding);
-            return;
-        }
-        // Add points to the map
+        ResourceClass resourceCost = building.resourceRequirements;
+        if (!resourceManager.HasEnoughResources(resourceCost)) return;
+        if (CalculateIsOverlapping(previewBuildingObject, out List<Vector2Int> positions)) return;
+
+        GameObject newBuilding =
+            Instantiate(currentlySelectedBuilding.obj, position, previewBuildingRotation, buildingParent);
+        newBuilding.name = currentlySelectedBuilding.name;
+
         MapManager.Instance.OccupyPositions(positions);
+        resourceManager.ChangeResources(resourceCost);
 
-        // FIXME: Check if resources are available
-        foreach (ResourceRequirement t in currentlySelectedBuilding.GetResourceRequirements())
+        // TODO: Spawn citizens
+
+        if (!resourceManager.HasEnoughResources(resourceCost))
         {
-            if(false /* Check current resource amount against t */)
-            {
-                Destroy(newBuilding);
-                return;
-            }
-            Debug.Log(t.resourceName + " " + t.amount);
+            CancelBuilding();
         }
-        // FIXME: Deduct resources from resource manager
-
-        // FIXME: Spawn citizens
-        // CitizenManager.Instance.SpawnCitizens(currentlySelectedBuilding.GetCitizensToSpawn(), position);
-
-        // Destroy the preview building
         Destroy(previewBuildingObject);
     }
 
-    private bool CalculateIsOverlaping(GameObject newBuilding, out List<Vector2Int> BuildingPositions)
+    private static bool CalculateIsOverlapping(GameObject newBuilding, out List<Vector2Int> buildingPositions)
     {
-        // Get bounds of the building
         Bounds bounds = newBuilding.GetComponent<MeshRenderer>().bounds;
+        Vector3Int transformPosition = new Vector3Int(Mathf.RoundToInt(newBuilding.transform.position.x),
+            Mathf.RoundToInt(newBuilding.transform.position.y), Mathf.RoundToInt(newBuilding.transform.position.z));
 
-        Vector3Int transformPosition = new Vector3Int((int)newBuilding.transform.position.x, (int)newBuilding.transform.position.y, (int)newBuilding.transform.position.z);
-        // Get all the positions that the building will occupy using half extends
-        BuildingPositions = new List<Vector2Int>();
-        for (int x = (int)-bounds.extents.x; x < bounds.extents.x; x++)
-        {
-            for (int z = (int)-bounds.extents.z; z < bounds.extents.z; z++)
-            {
-                if(MapManager.Instance.IsObstructed(new Vector2Int(transformPosition.x + x, transformPosition.z + z)))
-                {
-                    // Later show a popup in corner of screen saying position is obstructed
-                    Debug.LogWarning("Position is obstructed");
-                    return true;
-                }
-                BuildingPositions.Add(new Vector2Int(transformPosition.x + x, transformPosition.z + z));
-            }
-        }
-        return false;
+        buildingPositions = Enumerable.Range((int)-bounds.extents.x, (int)bounds.size.x)
+            .SelectMany(x => Enumerable.Range((int)-bounds.extents.z, (int)bounds.size.z)
+                .Select(z => new Vector2Int(transformPosition.x + x, transformPosition.z + z)))
+            .ToList();
+        
+        return buildingPositions.Any(pos => MapManager.Instance.IsObstructed(pos));;
     }
 
-    // On draw gizmos
     private void OnDrawGizmos()
     {
         if (!currentlySelectedBuilding) return;
 
-        Ray mouseToScreenRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray mouseToScreenRay = camera.ScreenPointToRay(Input.mousePosition);
         Gizmos.color = Color.red;
-        Gizmos.DrawRay(Camera.main.transform.position, mouseToScreenRay.direction * 100f);
+        Gizmos.DrawRay(camera.transform.position, mouseToScreenRay.direction * 100f);
     }
 }

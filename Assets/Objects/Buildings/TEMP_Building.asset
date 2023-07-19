@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f815460d30292424aa9a1c156c1ede68, type: 3}
   m_Name: TEMP_Building
   m_EditorClassIdentifier: 
-  buildingName: TEMP_Building
-  buildingObject: {fileID: 919132149155446097, guid: 431bcd29489440d4eb64401e64045932, type: 3}
+  name: TEMP_BUILDING
+  obj: {fileID: 919132149155446097, guid: 71d3d0dc47578814db8d90c0036bc030, type: 3}
   resourceRequirements:
-  - resourceName: Wood
-    amount: 2
-  - resourceName: Stone
-    amount: 3
-  CitizensToSpawn: 0
+    food: 0
+    wood: -25
+    stone: 0
+    tin: 0
+    copper: 0
+  citizenToSpawn: 0
