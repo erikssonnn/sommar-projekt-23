@@ -15,9 +15,9 @@ public class BuildingManager : MonoBehaviour
     private GameObject previewBuildingObject = null;
     private Quaternion previewBuildingRotation = Quaternion.identity;
 
-    private Vector3Int testedPosition = Vector3Int.zero;
     private ResourceManager resourceManager = null;
     private new Camera camera = null;
+    private MeshRenderer previewRenderer = null;
 
     public static BuildingManager Instance { get; private set; }
 
@@ -118,34 +118,22 @@ public class BuildingManager : MonoBehaviour
             previewBuildingObject.transform.localScale *= 1.05f;
             previewBuildingObject.name = "Previewing " + currentlySelectedBuilding.name;
 
-            Material[] meshMaterials = previewBuildingObject.GetComponent<MeshRenderer>().materials;
+            previewRenderer = previewBuildingObject.GetComponent<MeshRenderer>();
+            Material[] meshMaterials = previewRenderer.materials;
             meshMaterials = meshMaterials.Select(mat => previewMaterial).ToArray();
             previewBuildingObject.GetComponent<MeshRenderer>().materials = meshMaterials;
         }
-        else
-        {
-            if (testedPosition == position)
-            {
-                previewBuildingObject.transform.position = position;
-                previewBuildingObject.transform.rotation = previewBuildingRotation;
-                if (CalculateIsOverlapping(previewBuildingObject, out _))
-                {
-                    foreach (Material t in previewBuildingObject.GetComponent<MeshRenderer>().materials)
-                    {
-                        t.color = obstructedColor;
-                    }
-                }
-                else
-                {
-                    foreach (Material t in previewBuildingObject.GetComponent<MeshRenderer>().materials)
-                    {
-                        t.color = previewColor;
-                    }
-                }
-            }
 
-            testedPosition = position;
+        previewBuildingObject.transform.position = position;
+        previewBuildingObject.transform.rotation = previewBuildingRotation;
+
+        if (previewRenderer == null)
+        {
+            throw new System.Exception("Something went wrong, this should not be able to be null");
         }
+        
+        Color selectedColor = CalculateIsOverlapping(previewBuildingObject, out _) ? obstructedColor : previewColor;
+        previewRenderer.materials.ToList().ForEach(mat => mat.color = selectedColor);
     }
 
     private void PlaceBuilding(Vector3Int position)
@@ -178,22 +166,12 @@ public class BuildingManager : MonoBehaviour
         Vector3Int transformPosition = new Vector3Int(Mathf.RoundToInt(t.position.x),
             Mathf.RoundToInt(t.position.y), Mathf.RoundToInt(t.position.z));
 
-        buildingPositions = new List<Vector2Int>();
-        for (int x = (int)-bounds.extents.x; x < bounds.extents.x; x++)
-        {
-            for (int z = (int)-bounds.extents.z; z < bounds.extents.z; z++)
-            {
-                if (MapManager.Instance.IsObstructed(new Vector2Int(transformPosition.x + x, transformPosition.z + z)))
-                {
-                    Debug.LogWarning("Position is obstructed");
-                    return true;
-                }
-
-                buildingPositions.Add(new Vector2Int(transformPosition.x + x, transformPosition.z + z));
-            }
-        }
-
-        return false;
+        buildingPositions = Enumerable.Range((int)-bounds.extents.x, (int)bounds.size.x)
+            .SelectMany(x => Enumerable.Range((int)-bounds.extents.z, (int)bounds.size.z)
+                .Select(z => new Vector2Int(transformPosition.x + x, transformPosition.z + z)))
+            .ToList();
+        
+        return buildingPositions.Any(pos => MapManager.Instance.IsObstructed(pos));;
     }
 
     private void OnDrawGizmos()
