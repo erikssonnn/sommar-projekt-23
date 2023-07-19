@@ -1,4 +1,3 @@
-using System.Reflection;
 using UnityEngine;
 
 [System.Serializable]
@@ -51,20 +50,20 @@ public class ResourceManager : MonoBehaviour
         CurrentResources.stone += changeAmount.stone;
         CurrentResources.tin += changeAmount.tin;
         CurrentResources.copper += changeAmount.copper;
+
+        CurrentResources.food = Mathf.Clamp(CurrentResources.food, 0, 100000);
+        CurrentResources.wood = Mathf.Clamp(CurrentResources.wood, 0, 100000);
+        CurrentResources.stone = Mathf.Clamp(CurrentResources.stone, 0, 100000);
+        CurrentResources.tin = Mathf.Clamp(CurrentResources.tin, 0, 100000);
+        CurrentResources.copper = Mathf.Clamp(CurrentResources.copper, 0, 100000);
     }
     
     public bool HasEnoughResources(ResourceClass costResources)
     {
-        for (int i = 0; i < typeof(ResourceClass).GetProperties().Length; i++)
-        {
-            PropertyInfo resourceProperty = typeof(ResourceClass).GetProperties()[i];
-            int requiredAmount = (int)resourceProperty.GetValue(costResources);
-            int currentAmount = (int)resourceProperty.GetValue(CurrentResources);
-
-            if (requiredAmount > currentAmount)
-                return false;
-        }
-
-        return true;
+        return Mathf.Abs(costResources.food) <= CurrentResources.food &&
+               Mathf.Abs(costResources.wood) <= CurrentResources.wood &&
+               Mathf.Abs(costResources.stone) <= CurrentResources.stone &&
+               Mathf.Abs(costResources.tin) <= CurrentResources.tin &&
+               Mathf.Abs(costResources.copper) <= CurrentResources.copper;
     }
 }

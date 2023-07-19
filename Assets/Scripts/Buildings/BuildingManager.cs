@@ -137,7 +137,7 @@ public class BuildingManager : MonoBehaviour
                 // Move the preview building to the mouse position
                 previewBuildingObject.transform.position = position;
                 previewBuildingObject.transform.rotation = previewBuildingRotation;
-                if(CalculateIsOverlaping(previewBuildingObject, out _))
+                if(CalculateIsOverlapping(previewBuildingObject, out _))
                 {
                     foreach (Material t in previewBuildingObject.GetComponent<MeshRenderer>().materials)
                     {
@@ -156,15 +156,14 @@ public class BuildingManager : MonoBehaviour
         }
     }
 
-    // TODO: Convert overlaping check to job system
+    // TODO: Convert overlapping check to job system
     private void PlaceBuilding(Vector3Int position)
     {
-        // Instanciate a new building
+        // Instantiate a new building
         GameObject newBuilding = Instantiate(currentlySelectedBuilding.obj, position, previewBuildingRotation, buildingParent);
         newBuilding.name = currentlySelectedBuilding.name;
-        
-        List<Vector2Int> positions;
-        if(CalculateIsOverlaping(newBuilding,out positions))
+
+        if(CalculateIsOverlapping(newBuilding,out List<Vector2Int> positions))
         {
             // Destroy the new building
             Destroy(newBuilding);
@@ -173,11 +172,8 @@ public class BuildingManager : MonoBehaviour
         // Add points to the map
         MapManager.Instance.OccupyPositions(positions);
 
-        // VERIFY CHANGE: check if player has enough resources
         ResourceClass resourceCost = building.resourceRequirements;
         if (!resourceManager.HasEnoughResources(resourceCost)) return;
-        
-        //VERIFY CHANGE: player has enough resources, remove them from the ResourceManager
         resourceManager.ChangeResources(resourceCost);
         
         // FIXME: Spawn citizens
@@ -187,14 +183,14 @@ public class BuildingManager : MonoBehaviour
         Destroy(previewBuildingObject);
     }
 
-    private bool CalculateIsOverlaping(GameObject newBuilding, out List<Vector2Int> BuildingPositions)
+    private static bool CalculateIsOverlapping(GameObject newBuilding, out List<Vector2Int> buildingPositions)
     {
         // Get bounds of the building
         Bounds bounds = newBuilding.GetComponent<MeshRenderer>().bounds;
 
         Vector3Int transformPosition = new Vector3Int((int)newBuilding.transform.position.x, (int)newBuilding.transform.position.y, (int)newBuilding.transform.position.z);
         // Get all the positions that the building will occupy using half extends
-        BuildingPositions = new List<Vector2Int>();
+        buildingPositions = new List<Vector2Int>();
         for (int x = (int)-bounds.extents.x; x < bounds.extents.x; x++)
         {
             for (int z = (int)-bounds.extents.z; z < bounds.extents.z; z++)
@@ -205,7 +201,7 @@ public class BuildingManager : MonoBehaviour
                     Debug.LogWarning("Position is obstructed");
                     return true;
                 }
-                BuildingPositions.Add(new Vector2Int(transformPosition.x + x, transformPosition.z + z));
+                buildingPositions.Add(new Vector2Int(transformPosition.x + x, transformPosition.z + z));
             }
         }
         return false;
