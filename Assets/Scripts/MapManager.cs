@@ -25,10 +25,7 @@ public class MapManager : MonoBehaviour
     [SerializeField] private Vector2Int mapSize = Vector2Int.zero;
     [SerializeField] private bool debug = false;
 
-    public Vector2Int MapSize
-    {
-        get => mapSize;
-    }
+    public Vector2Int MapSize => mapSize;
 
     public static MapManager Instance { get; private set; }
     private readonly Dictionary<Vector2Int, Tile> map = new Dictionary<Vector2Int, Tile>();
